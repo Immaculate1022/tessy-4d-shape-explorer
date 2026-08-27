@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meet Tessy! The 4D Shape Explorer</title>
+  <style>
+    :root {
+      --bg: #f8f4e8;
+      --card: #ffffff;
+      --accent: #6b4ce6;
+      --accent2: #ff9f1c;
+      --text: #1a1a2e;
+      --muted: #5a5a7a;
+      --tessy-bg: #0d0d1a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.25rem 1.5rem;
+      background: white;
+      border-bottom: 2px solid #e8e0d0;
+      flex-wrap: wrap;
+    }
+    .logo {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, #6b4ce6, #a78bfa);
+      border-radius: 14px;
+      display: grid; place-items: center;
+      font-size: 1.6rem;
+      color: white;
+      flex-shrink: 0;
+    }
+    h1 { font-size: 1.45rem; font-weight: 700; }
+    .subtitle { color: var(--muted); font-size: 0.95rem; }
+    .badges { margin-left: auto; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .badge {
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .badge-age { background: #fff3cd; color: #856404; }
+    .badge-play { background: #d1f2eb; color: #0e6655; }
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      display: grid;
+      gap: 1.5rem;
+    }
+    .story-card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 1.25rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .story-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .dims {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 0.75rem;
+    }
+    .dim {
+      border: 2px solid #e8e0d0;
+      border-radius: 14px;
+      padding: 0.9rem 0.6rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #faf8f4;
+    }
+    .dim:hover, .dim.active {
+      border-color: var(--accent);
+      background: #f3f0ff;
+      transform: translateY(-2px);
+    }
+    .dim.tessy {
+      background: var(--tessy-bg);
+      color: white;
+      border-color: #4c3a9e;
+    }
+    .dim.tessy.active { box-shadow: 0 0 0 3px #a78bfa; }
+    .dim-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: #e8e0d0;
+      display: inline-grid; place-items: center;
+      font-weight: 700; font-size: 0.85rem;
+      margin-bottom: 0.4rem;
+    }
+    .dim.tessy .dim-num { background: #6b4ce6; color: white; }
+    .dim-name { font-weight: 700; font-size: 0.95rem; }
+    .dim-label { font-size: 0.75rem; opacity: 0.75; }
+    .info-bar {
+      margin-top: 1rem;
+      background: #fff8e7;
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      font-size: 0.95rem;
+    }
+    .lab-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 1.25rem;
+    }
+    @media (max-width: 800px) {
+      .lab-grid { grid-template-columns: 1fr; }
+    }
+    .canvas-card, .side-card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 1rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .canvas-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .canvas-title { font-weight: 700; font-size: 0.95rem; }
+    .corners-badge {
+      background: #6b4ce6;
+      color: white;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    #canvas {
+      width: 100%;
+      height: 340px;
+      background: #faf8f4;
+      border-radius: 14px;
+      border: 2px solid #e8e0d0;
+      cursor: grab;
+      display: block;
+    }
+    #canvas:active { cursor: grabbing; }
+    .hint {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+    .controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+    }
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 0.45rem 0.9rem;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      background: #eee;
+      color: var(--text);
+      transition: background 0.15s;
+    }
+    button:hover { background: #ddd; }
+    button.primary { background: var(--accent); color: white; }
+    button.primary:hover { background: #5a3fd4; }
+    .counter-title {
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .live {
+      background: #d4edda;
+      color: #155724;
+      font-size: 0.7rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+    .corner-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.4rem;
+      margin-bottom: 1rem;
+    }
+    .corner-cell {
+      text-align: center;
+      padding: 0.5rem 0.2rem;
+      border-radius: 10px;
+      background: #f5f3ef;
+      border: 2px solid transparent;
+    }
+    .corner-cell.active {
+      background: #0d0d1a;
+      color: white;
+      border-color: #6b4ce6;
+    }
+    .corner-cell .label { font-size: 0.7rem; opacity: 0.8; }
+    .corner-cell .val { font-size: 1.25rem; font-weight: 800; }
+    .why-box {
+      background: #6b4ce6;
+      color: white;
+      border-radius: 14px;
+      padding: 1rem;
+      font-size: 0.9rem;
+    }
+    .why-box strong { display: block; margin-bottom: 0.35rem; }
+    .seq {
+      margin-top: 0.6rem;
+      background: rgba(255,255,255,0.15);
+      border-radius: 8px;
+      padding: 0.4rem 0.6rem;
+      font-family: monospace;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    footer a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">✨</div>
+    <div>
+      <h1>Meet Tessy! The 4D Shape Explorer</h1>
+      <p class="subtitle">A museum lab for curious brains · Tap, drag, and giggle with dimensions ✨</p>
+    </div>
+    <div class="badges">
+      <span class="badge badge-age">FOR AGES 8–12</span>
+      <span class="badge badge-play">PLAY · NO JARGON</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="story-card">
+      <div class="story-title">📖 Story of Dimensions</div>
+      <div class="dims" id="dimButtons">
+        <div class="dim" data-dim="0">
+          <div class="dim-num">0</div>
+          <div class="dim-name">Dotty</div>
+          <div class="dim-label">0D</div>
+        </div>
+        <div class="dim" data-dim="1">
+          <div class="dim-num">1</div>
+          <div class="dim-name">Liney</div>
+          <div class="dim-label">1D</div>
+        </div>
+        <div class="dim" data-dim="2">
+          <div class="dim-num">2</div>
+          <div class="dim-name">Squarey</div>
+          <div class="dim-label">2D</div>
+        </div>
+        <div class="dim" data-dim="3">
+          <div class="dim-num">3</div>
+          <div class="dim-name">Cubey</div>
+          <div class="dim-label">3D</div>
+        </div>
+        <div class="dim tessy active" data-dim="4">
+          <div class="dim-num">4</div>
+          <div class="dim-name">Tessy</div>
+          <div class="dim-label">4D</div>
+        </div>
+      </div>
+      <div class="info-bar" id="infoBar">
+        ✨ <strong>Tessy — 4D · 16 corners</strong><br>
+        Magic! A cube inside a cube! Outer cube + inner cube + magic connections!
+      </div>
+    </section>
+
+    <div class="lab-grid">
+      <section class="canvas-card">
+        <div class="canvas-header">
+          <span class="canvas-title">🧪 TESSY LAB CANVAS · DRAG TO SPIN · TAP CORNERS</span>
+          <span class="corners-badge" id="cornersNow">16 CORNERS NOW</span>
+        </div>
+        <canvas id="canvas" width="640" height="340"></canvas>
+        <p class="hint">Drag to spin · Scroll or buttons to zoom · Click a corner to highlight</p>
+        <div class="controls">
+          <button class="primary" id="btnAuto">▶ Auto-spin</button>
+          <button id="btnReset">Reset view</button>
+          <button id="btnNext">Next dimension →</button>
+        </div>
+      </section>
+
+      <section class="side-card">
+        <div class="counter-title">
+          🔢 Corner Counter <span class="live">LIVE!</span>
+        </div>
+        <div class="corner-grid" id="cornerGrid">
+          <div class="corner-cell" data-d="0"><div class="label">0D</div><div class="val">1</div></div>
+          <div class="corner-cell" data-d="1"><div class="label">1D</div><div class="val">2</div></div>
+          <div class="corner-cell" data-d="2"><div class="label">2D</div><div class="val">4</div></div>
+          <div class="corner-cell" data-d="3"><div class="label">3D</div><div class="val">8</div></div>
+          <div class="corner-cell active" data-d="4"><div class="label">4D</div><div class="val">16</div></div>
+        </div>
+        <div class="why-box">
+          <strong>Why 16 corners? 🤔</strong>
+          Each new dimension <strong>DOUBLES</strong> the corners! Copy the whole shape to the new direction.
+          <div class="seq">1 → 2 → 4 → 8 → 16</div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    Open-source educational project · Inspired by dimensional exploration ·
+    <a href="https://github.com/Immaculate1022/tessy-4d-shape-explorer">GitHub</a>
+    · Part of the PegaConstellation open-source collection
+  </footer>
+
+  <script>
+    // ---- Dimension story data ----
+    const stories = {
+      0: { name: "Dotty", corners: 1, text: "✨ Dotty — 0D · 1 corner<br>Just a single tiny point. No length, no width, no height. Pure location!" },
+      1: { name: "Liney", corners: 2, text: "✨ Liney — 1D · 2 corners<br>A straight line! Dotty stretched into a new direction. Two ends (corners)." },
+      2: { name: "Squarey", corners: 4, text: "✨ Squarey — 2D · 4 corners<br>Liney stretched sideways. A flat square with four corners you can draw on paper." },
+      3: { name: "Cubey", corners: 8, text: "✨ Cubey — 3D · 8 corners<br>Squarey stretched up into height. A real cube you can hold — 8 corners!" },
+      4: { name: "Tessy", corners: 16, text: "✨ Tessy — 4D · 16 corners<br>Magic! A cube inside a cube! Outer cube + inner cube + magic connections!" }
+    };
+
+    let currentDim = 4;
+    let autoSpin = false;
+    let angleXW = 0.4, angleYW = 0.3, angleZW = 0.2;
+    let angleXY = 0.15, angleXZ = 0.1, angleYZ = 0.05;
+    let scale = 90;
+    let selectedVertex = -1;
+
+    // Generate vertices of an n-cube (n ≤ 4)
+    function generateVertices(dim) {
+      const verts = [];
+      const n = 1 << dim; // 2^dim
+      for (let i = 0; i < n; i++) {
+        const v = [];
+        for (let d = 0; d < 4; d++) {
+          if (d < dim) {
+            v.push((i & (1 << d)) ? 1 : -1);
+          } else {
+            v.push(0);
+          }
+        }
+        verts.push(v);
+      }
+      return verts;
+    }
+
+    // Edges: connect vertices that differ by exactly one bit
+    function generateEdges(dim) {
+      const edges = [];
+      const n = 1 << dim;
+      for (let i = 0; i < n; i++) {
+        for (let b = 0; b < dim; b++) {
+          const j = i ^ (1 << b);
+          if (i < j) edges.push([i, j]);
+        }
+      }
+      return edges;
+    }
+
+    // 4D rotation helpers (plane rotations)
+    function rotate4D(v, planes) {
+      let [x, y, z, w] = v;
+      // XY
+      if (planes.xy) {
+        const c = Math.cos(planes.xy), s = Math.sin(planes.xy);
+        const nx = x * c - y * s, ny = x * s + y * c;
+        x = nx; y = ny;
+      }
+      // XZ
+      if (planes.xz) {
+        const c = Math.cos(planes.xz), s = Math.sin(planes.xz);
+        const nx = x * c - z * s, nz = x * s + z * c;
+        x = nx; z = nz;
+      }
+      // XW
+      if (planes.xw) {
+        const c = Math.cos(planes.xw), s = Math.sin(planes.xw);
+        const nx = x * c - w * s, nw = x * s + w * c;
+        x = nx; w = nw;
+      }
+      // YZ
+      if (planes.yz) {
+        const c = Math.cos(planes.yz), s = Math.sin(planes.yz);
+        const ny = y * c - z * s, nz = y * s + z * c;
+        y = ny; z = nz;
+      }
+      // YW
+      if (planes.yw) {
+        const c = Math.cos(planes.yw), s = Math.sin(planes.yw);
+        const ny = y * c - w * s, nw = y * s + w * c;
+        y = ny; w = nw;
+      }
+      // ZW
+      if (planes.zw) {
+        const c = Math.cos(planes.zw), s = Math.sin(planes.zw);
+        const nz = z * c - w * s, nw = z * s + w * c;
+        z = nz; w = nw;
+      }
+      return [x, y, z, w];
+    }
+
+    // Perspective project 4D → 2D (via 3D)
+    function project(v4) {
+      const dist4 = 3.5;
+      const w = 1 / (dist4 - v4[3]);
+      const x3 = v4[0] * w;
+      const y3 = v4[1] * w;
+      const z3 = v4[2] * w;
+      const dist3 = 4.5;
+      const p = 1 / (dist3 - z3);
+      return {
+        x: x3 * p * scale,
+        y: y3 * p * scale,
+        z: z3
+      };
+    }
+
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let dragging = false, lastX = 0, lastY = 0;
+
+    function draw() {
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      // soft grid
+      ctx.strokeStyle = "#eee8dc";
+      ctx.lineWidth = 1;
+      for (let i = 0; i < W; i += 40) {
+        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, H); ctx.stroke();
+      }
+      for (let i = 0; i < H; i += 40) {
+        ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(W, i); ctx.stroke();
+      }
+
+      const verts4 = generateVertices(currentDim);
+      const edges = generateEdges(currentDim);
+      const planes = {
+        xy: angleXY, xz: angleXZ, xw: angleXW,
+        yz: angleYZ, yw: angleYW, zw: angleZW
+      };
+
+      const projected = verts4.map(v => {
+        const r = rotate4D(v, planes);
+        const p = project(r);
+        return { ...p, ox: p.x + W / 2, oy: -p.y + H / 2 };
+      });
+
+      // draw edges
+      ctx.lineWidth = 2.2;
+      edges.forEach(([a, b]) => {
+        const pa = projected[a], pb = projected[b];
+        // color by depth
+        const depth = (pa.z + pb.z) / 2;
+        const alpha = 0.35 + 0.55 * (1 - (depth + 1.2) / 2.4);
+        ctx.strokeStyle = `rgba(107, 76, 230, ${Math.max(0.25, Math.min(0.95, alpha))})`;
+        ctx.beginPath();
+        ctx.moveTo(pa.ox, pa.oy);
+        ctx.lineTo(pb.ox, pb.oy);
+        ctx.stroke();
+      });
+
+      // draw vertices
+      projected.forEach((p, i) => {
+        const r = (i === selectedVertex) ? 9 : 5.5;
+        ctx.beginPath();
+        ctx.arc(p.ox, p.oy, r, 0, Math.PI * 2);
+        if (i === selectedVertex) {
+          ctx.fillStyle = "#ff9f1c";
+          ctx.strokeStyle = "#fff";
+          ctx.lineWidth = 2;
+          ctx.fill(); ctx.stroke();
+        } else {
+          ctx.fillStyle = "#1a1a2e";
+          ctx.fill();
+        }
+      });
+
+      // label
+      ctx.fillStyle = "#6b4ce6";
+      ctx.font = "600 14px system-ui";
+      ctx.fillText(stories[currentDim].name + " · " + currentDim + "D", 16, 28);
+    }
+
+    function animate() {
+      if (autoSpin) {
+        angleXW += 0.012;
+        angleYW += 0.009;
+        angleZW += 0.007;
+      }
+      draw();
+      requestAnimationFrame(animate);
+    }
+
+    // Interaction
+    canvas.addEventListener("mousedown", e => {
+      dragging = true;
+      lastX = e.offsetX; lastY = e.offsetY;
+      // hit-test vertices
+      const verts4 = generateVertices(currentDim);
+      const planes = { xy: angleXY, xz: angleXZ, xw: angleXW, yz: angleYZ, yw: angleYW, zw: angleZW };
+      const projected = verts4.map(v => {
+        const r = rotate4D(v, planes);
+        const p = project(r);
+        return { ox: p.x + canvas.width / 2, oy: -p.y + canvas.height / 2 };
+      });
+      selectedVertex = -1;
+      for (let i = 0; i < projected.length; i++) {
+        const dx = projected[i].ox - e.offsetX;
+        const dy = projected[i].oy - e.offsetY;
+        if (dx * dx + dy * dy < 100) { selectedVertex = i; break; }
+      }
+    });
+    window.addEventListener("mouseup", () => dragging = false);
+    canvas.addEventListener("mousemove", e => {
+      if (!dragging) return;
+      const dx = e.offsetX - lastX;
+      const dy = e.offsetY - lastY;
+      angleYW += dx * 0.008;
+      angleXW += dy * 0.008;
+      lastX = e.offsetX; lastY = e.offsetY;
+    });
+    canvas.addEventListener("wheel", e => {
+      e.preventDefault();
+      scale = Math.max(40, Math.min(180, scale - e.deltaY * 0.08));
+    }, { passive: false });
+
+    // Touch support
+    canvas.addEventListener("touchstart", e => {
+      if (e.touches.length === 1) {
+        dragging = true;
+        lastX = e.touches[0].clientX - canvas.getBoundingClientRect().left;
+        lastY = e.touches[0].clientY - canvas.getBoundingClientRect().top;
+      }
+    }, { passive: true });
+    canvas.addEventListener("touchmove", e => {
+      if (!dragging || e.touches.length !== 1) return;
+      const x = e.touches[0].clientX - canvas.getBoundingClientRect().left;
+      const y = e.touches[0].clientY - canvas.getBoundingClientRect().top;
+      angleYW += (x - lastX) * 0.008;
+      angleXW += (y - lastY) * 0.008;
+      lastX = x; lastY = y;
+    }, { passive: true });
+    canvas.addEventListener("touchend", () => dragging = false);
+
+    // UI
+    function setDim(d) {
+      currentDim = d;
+      selectedVertex = -1;
+      document.querySelectorAll(".dim").forEach(el => {
+        el.classList.toggle("active", +el.dataset.dim === d);
+      });
+      document.querySelectorAll(".corner-cell").forEach(el => {
+        el.classList.toggle("active", +el.dataset.d === d);
+      });
+      document.getElementById("infoBar").innerHTML = stories[d].text;
+      document.getElementById("cornersNow").textContent = stories[d].corners + " CORNERS NOW";
+    }
+
+    document.getElementById("dimButtons").addEventListener("click", e => {
+      const dimEl = e.target.closest(".dim");
+      if (dimEl) setDim(+dimEl.dataset.dim);
+    });
+
+    document.getElementById("btnAuto").addEventListener("click", () => {
+      autoSpin = !autoSpin;
+      document.getElementById("btnAuto").textContent = autoSpin ? "⏸ Pause spin" : "▶ Auto-spin";
+    });
+    document.getElementById("btnReset").addEventListener("click", () => {
+      angleXW = 0.4; angleYW = 0.3; angleZW = 0.2;
+      angleXY = 0.15; angleXZ = 0.1; angleYZ = 0.05;
+      scale = 90; selectedVertex = -1;
+    });
+    document.getElementById("btnNext").addEventListener("click", () => {
+      setDim((currentDim + 1) % 5);
+    });
+
+    // start
+    setDim(4);
+    animate();
+  </script>
+</body>
+</html>
